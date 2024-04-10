@@ -12,17 +12,14 @@ class ProductsTest extends TestCase
 {
     use RefreshDatabase;
     private User $user;
+    private User $admin;
 
     protected function setUp():void
     {
         parent::setUp();
 
         $this->user = $this->createUser();
-    }
-
-    private function createUser()
-    {
-        return User::factory()->create();
+        $this->admin = $this->createUser(true);
     }
 
     public function test_products_pages_contains_empty_table()
@@ -59,5 +56,66 @@ class ProductsTest extends TestCase
         $response->assertViewHas("products", function($collection) use ($lastProduct){
             return !$collection->contains($lastProduct);
         });
+    }
+
+    public function test_admin_can_see_products_create_button()
+    {
+        $response = $this->actingAs($this->admin)->get("/products");
+
+        $response->assertStatus(200);
+        $response->assertSee("Add new product");
+    }
+
+    public function test_non_admin_cannot_see_products_create_button()
+    {
+        $response = $this->actingAs($this->user)->get("/products");
+
+        $response->assertStatus(200);
+        $response->assertDontSee("Add new product");
+    }
+
+    public function test_admin_can_access_products_create_page()
+    {
+        $response = $this->actingAs($this->admin)->get("/products/create");
+
+        $response->assertStatus(200);
+    }
+
+    public function test_non_admin_cannot_access_products_create_page()
+    {
+        $response = $this->actingAs($this->user)->get("/products/create");
+
+        $response->assertStatus(403);
+    }
+
+    public function test_non_authenticated_user_cannot_access_products_create_page()
+    {
+        $response = $this->get("/products/create");
+
+        $response->assertStatus(302);
+        $response->assertRedirect("login");
+    }
+
+    public function test_create_product_successful()
+    {
+        $product = [
+            "name" => "Product 123",
+            "price" => 1234
+        ];
+
+        $response = $this->actingAs($this->admin)->post('/products', $product);
+
+        $response->assertStatus(302);
+        $response->assertRedirect("products");
+
+        $this->assertDatabaseHas("products", $product);
+        $lastProduct = Product::latest()->first();
+        $this->assertEquals($lastProduct->name, $product["name"]);
+        $this->assertEquals($lastProduct->price, $product["price"]);
+    }
+
+    private function createUser(bool $isAdmin = false): User
+    {
+        return User::factory()->create(["is_admin" => $isAdmin]);
     }
 }
