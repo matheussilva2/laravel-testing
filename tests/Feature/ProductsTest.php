@@ -37,7 +37,16 @@ class ProductsTest extends TestCase
 
     public function test_paginated_products_table_doesnt_contain_11th_record()
     {
-        $products = Product::factory(11)->create();
+        for ($i=0; $i <= 11; $i++) { 
+            $newProduct = [
+                "name" => generateRandomString(20),
+                "price" => rand(100, 999)
+            ];
+
+            Product::create($newProduct);
+        }
+
+        $products = Product::all();
         $lastProduct = $products->last();
 
         $response = $this->get("/products");
