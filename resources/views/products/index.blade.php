@@ -10,8 +10,8 @@
                 <tr>
                     <td>Name</td>
                     <td>Price</td>
-                    @if(auth()->user()->isAdmin)
-                    <td></td>
+                    @if(auth()->user()->is_admin)
+                    <td>&nbsp;</td>
                     @endif
                 </tr>
             </thead>
@@ -20,9 +20,16 @@
                     <tr class="bg-white">
                         <td class="px-6 py-4 whitespace-no-wrap">{{$product->name}}</td>
                         <td class="px-6 py-4 whitespace-no-wrap">{{$product->price}}</td>
-                        @if(auth()->user()->isAdmin)
-                        <td class="px-6 py-4 whitespace-no-wrap">
+                        @if(auth()->user()->is_admin)
+                        <td class="px-6 py-4 whitespace-no-wrap d-flex">
                             <a href="{{route('products.edit', $product->id)}}" class="btn btn-primary">Edit</a>
+
+                            <form method="post" action="{{ route('products.destroy', $product) }}">
+                                @csrf
+                                @method("DELETE")
+
+                                <button class="btn btn-danger" onclick="return confirm('Are you sure?')" type="submit">DELETE</button>
+                            </form>
                         </td>
                         @endif
                     </tr>
