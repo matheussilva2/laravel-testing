@@ -10,6 +10,9 @@
                 <tr>
                     <td>Name</td>
                     <td>Price</td>
+                    @if(auth()->user()->isAdmin)
+                    <td></td>
+                    @endif
                 </tr>
             </thead>
             <tbody class="bg-white divide-y">
@@ -17,6 +20,11 @@
                     <tr class="bg-white">
                         <td class="px-6 py-4 whitespace-no-wrap">{{$product->name}}</td>
                         <td class="px-6 py-4 whitespace-no-wrap">{{$product->price}}</td>
+                        @if(auth()->user()->isAdmin)
+                        <td class="px-6 py-4 whitespace-no-wrap">
+                            <a href="{{route('products.edit', $product->id)}}" class="btn btn-primary">Edit</a>
+                        </td>
+                        @endif
                     </tr>
                 @empty
                     <tr class="bg-white">
